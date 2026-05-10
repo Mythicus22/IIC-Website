@@ -1,0 +1,141 @@
+.team-filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1rem;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 2rem;
+}
+
+.role-select {
+  min-width: 180px;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--light);
+  color: var(--text-main);
+  font-family: var(--font-body);
+}
+
+.filter-tabs button {
+  background: transparent;
+  border: none;
+  font-family: var(--font-body);
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  position: relative;
+  padding-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.filter-tabs button.active {
+  color: var(--secondary);
+}
+
+.filter-tabs button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1rem;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--secondary);
+}
+
+.team-grid-large {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+  margin-bottom: 5rem;
+}
+
+.team-card-wrapper {
+  position: relative;
+  background: var(--light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding-bottom: 1.5rem;
+  transition: var(--transition);
+}
+
+.team-card-wrapper:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--secondary-light);
+}
+
+.team-card-badge {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-light);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.cta-box {
+  background-color: var(--primary);
+  border-radius: var(--radius-lg);
+  padding: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4rem;
+}
+
+.cta-box-content h2 {
+  font-size: 2rem;
+  color: var(--dark);
+  margin-bottom: 1rem;
+}
+
+.cta-box-content p {
+  color: var(--dark);
+  opacity: 0.8;
+  font-size: 1.1rem;
+}
+
+.cta-box-actions {
+  display: flex;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 992px) {
+  .team-grid-large {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .cta-box {
+    flex-direction: column;
+    text-align: center;
+    padding: 3rem 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .team-filters {
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: stretch;
+  }
+  .filter-tabs {
+    overflow-x: auto;
+    padding-bottom: 1.5rem;
+  }
+  .role-select {
+    width: 100%;
+  }
+  .team-grid-large {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

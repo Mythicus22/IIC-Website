@@ -1,0 +1,89 @@
+.flowchart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.flow-step {
+  background: var(--light);
+  border: 2px solid var(--border);
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  position: relative;
+  width: 100%;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.flow-step:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--secondary);
+}
+
+.flow-step.highlight {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.flow-step.highlight p {
+  color: var(--dark);
+}
+
+.step-number {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--secondary);
+  color: var(--light);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.flow-arrow {
+  font-size: 2rem;
+  color: var(--secondary);
+  margin: 1rem 0;
+  font-weight: bold;
+}
+
+.grid-flow {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  max-width: 900px;
+  gap: 1rem;
+}
+
+.flow-arrow.horizontal {
+  margin: 0;
+}
+
+.bg-primary {
+  background-color: var(--primary);
+  color: var(--dark);
+}
+
+.bg-light {
+  background-color: var(--bg-light);
+}
+
+@media (max-width: 768px) {
+  .grid-flow {
+    flex-direction: column;
+  }
+  .flow-arrow.horizontal {
+    transform: rotate(90deg);
+    margin: 1rem 0;
+  }
+}
