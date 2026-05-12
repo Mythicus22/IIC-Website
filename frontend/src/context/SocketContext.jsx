@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
 const SocketContext = createContext();
@@ -8,15 +8,14 @@ export const useSocket = () => {
 };
 
 export const SocketProvider = ({ children }) => {
-  const [socket, setSocket] = useState(null);
+  const [socket] = useState(() => {
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+    return io(socketUrl);
+  });
 
   useEffect(() => {
-    // Connect to the backend
-    const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000');
-    setSocket(newSocket);
-
-    return () => newSocket.close();
-  }, []);
+    return () => socket.close();
+  }, [socket]);
 
   return (
     <SocketContext.Provider value={socket}>

@@ -11,6 +11,7 @@ import xss from 'xss-clean';
 import mongoSanitize from 'express-mongo-sanitize';
 import hpp from 'hpp';
 import connectDB from './src/config/db.js';
+import { allowedOrigins, corsOptions } from './src/config/cors.js';
 import apiRoutes from './src/routes/api.js';
 import { setupSocket } from './src/socket/index.js';
 import { notFound, errorHandler } from './src/middlewares/error.middleware.js';
@@ -18,10 +19,7 @@ import { notFound, errorHandler } from './src/middlewares/error.middleware.js';
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE']
-  }
+  cors: corsOptions
 });
 
 // Security Middlewares
@@ -39,7 +37,7 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 // Standard Middlewares
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
@@ -59,4 +57,5 @@ setupSocket(io);
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`CORS enabled for: ${allowedOrigins.join(', ') || 'same-origin/server-to-server only'}`);
 });
