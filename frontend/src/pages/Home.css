@@ -166,24 +166,21 @@
 }
 
 /* CTA Section */
-.cta-section {
-  background-color: var(--primary);
-  padding: 6rem 0;
-  text-align: center;
+.cta-section-wrapper {
+  padding: 5rem 0;
 }
 
 .cta-title {
-  font-size: 3rem;
+  font-size: 2rem;
   color: var(--dark);
   margin-bottom: 1rem;
 }
 
 .cta-desc {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: var(--dark);
-  opacity: 0.9;
+  opacity: 0.8;
   max-width: 600px;
-  margin: 0 auto 2.5rem auto;
 }
 
 /* Responsive */

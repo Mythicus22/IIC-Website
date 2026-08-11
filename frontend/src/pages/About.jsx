@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import ScrollReveal from '../components/ScrollReveal';
 import './About.css';
@@ -112,14 +111,17 @@ const About = () => {
       </section>
 
       {/* CTA */}
-      <section className="cta-section">
+      <section className="cta-section-wrapper section">
         <div className="container">
           <ScrollReveal>
-            <h2 className="cta-title">Ready to start your innovation journey?</h2>
-            <p className="cta-desc">Join a community of thousands of students building the future. Your idea could be the next big breakthrough.</p>
-            <div className="hero-actions" style={{justifyContent: 'center', marginTop: '2rem'}}>
-               <button className="btn btn-light" style={{ backgroundColor: 'white', color: 'var(--secondary)' }}>Join Us Today</button>
-               <Link to="/events" className="btn btn-secondary">Explore Events</Link>
+            <div className="cta-box">
+              <div className="cta-box-content">
+                <h2 className="cta-title">Ready to start your innovation journey?</h2>
+                <p className="cta-desc">Join a community of thousands of students building the future. Your idea could be the next big breakthrough.</p>
+              </div>
+              <div className="cta-box-actions">
+                <Link to="/events" className="btn btn-secondary">Explore Events</Link>
+              </div>
             </div>
           </ScrollReveal>
         </div>

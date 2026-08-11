@@ -1,25 +1,59 @@
 .team-filters {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 1.5rem;
   margin-bottom: 3rem;
   border-bottom: 1px solid var(--border);
-  padding-bottom: 1rem;
+  padding-bottom: 1.25rem;
+  flex-wrap: wrap;
 }
 
 .filter-tabs {
   display: flex;
   gap: 2rem;
+  flex-shrink: 0;
 }
 
 .role-select {
-  min-width: 180px;
-  padding: 0.75rem 1rem;
+  min-width: 160px;
+  padding: 0.6rem 1rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background-color: var(--light);
   color: var(--text-main);
   font-family: var(--font-body);
+  flex-shrink: 0;
+}
+
+.team-filters .search-box {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+}
+
+.team-filters .search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.team-filters .search-box input {
+  width: 100%;
+  padding: 0.6rem 1rem 0.6rem 3rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  background: var(--light);
+  color: var(--text-main);
+  box-sizing: border-box;
+}
+
+.team-filters .search-box input:focus {
+  outline: none;
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 3px rgba(44, 44, 140, 0.1);
 }
 
 .filter-tabs button {
@@ -60,7 +94,7 @@
   background: var(--light);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding-bottom: 1.5rem;
+  padding-bottom: 3.5rem;
   transition: var(--transition);
 }
 
@@ -83,42 +117,9 @@
   border: 1px solid var(--border);
 }
 
-.cta-box {
-  background-color: var(--primary);
-  border-radius: var(--radius-lg);
-  padding: 4rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4rem;
-}
-
-.cta-box-content h2 {
-  font-size: 2rem;
-  color: var(--dark);
-  margin-bottom: 1rem;
-}
-
-.cta-box-content p {
-  color: var(--dark);
-  opacity: 0.8;
-  font-size: 1.1rem;
-}
-
-.cta-box-actions {
-  display: flex;
-  gap: 1rem;
-  flex-shrink: 0;
-}
-
 @media (max-width: 992px) {
   .team-grid-large {
     grid-template-columns: repeat(3, 1fr);
-  }
-  .cta-box {
-    flex-direction: column;
-    text-align: center;
-    padding: 3rem 2rem;
   }
 }
 
@@ -132,7 +133,8 @@
     overflow-x: auto;
     padding-bottom: 1.5rem;
   }
-  .role-select {
+  .role-select,
+  .team-filters .search-box {
     width: 100%;
   }
   .team-grid-large {

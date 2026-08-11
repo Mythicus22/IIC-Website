@@ -1,12 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Calendar, Clock, MapPin, Map as MapIcon, X, Download, User } from 'lucide-react';
 import QRCode from 'qrcode';
 import MapComponent from './MapComponent';
 import './EventCard.css';
 
-const TicketModal = ({ event, user, onClose }) => {
+const createTicketId = (eventId) => (
+  `IIC-${eventId.slice(-6).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`
+);
+
+const TicketModal = ({ event, ticketId, user, onClose }) => {
   const canvasRef = useRef(null);
-  const ticketId = `IIC-${event._id.slice(-6).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -108,17 +111,14 @@ const TicketModal = ({ event, user, onClose }) => {
 const EventCard = ({ event, onClaim, user }) => {
   const [showMap, setShowMap] = useState(false);
   const [ticket, setTicket] = useState(null);
-  const [imageFailed, setImageFailed] = useState(false);
+  const [failedImage, setFailedImage] = useState(null);
   const imageUrl = event.imageUrl || event.secure_url || event.url;
-
-  useEffect(() => {
-    setImageFailed(false);
-  }, [imageUrl]);
+  const imageFailed = failedImage === imageUrl;
 
   const handleClaimClick = async () => {
     const result = await onClaim(event._id);
     if (result?.event) {
-      setTicket(result.event);
+      setTicket({ event: result.event, ticketId: createTicketId(result.event._id) });
     }
   };
 
@@ -127,7 +127,7 @@ const EventCard = ({ event, onClaim, user }) => {
       <div className="card event-card">
         <div className="event-img-wrapper">
           {imageUrl && !imageFailed ? (
-            <img src={imageUrl} alt={event.title} className="event-img" onError={() => setImageFailed(true)} />
+            <img src={imageUrl} alt={event.title} className="event-img" onError={() => setFailedImage(imageUrl)} />
           ) : (
             <div className="event-img-placeholder" />
           )}
@@ -165,7 +165,7 @@ const EventCard = ({ event, onClaim, user }) => {
         </div>
       </div>
 
-      {ticket && <TicketModal event={ticket} user={user} onClose={() => setTicket(null)} />}
+      {ticket && <TicketModal event={ticket.event} ticketId={ticket.ticketId} user={user} onClose={() => setTicket(null)} />}
     </>
   );
 };

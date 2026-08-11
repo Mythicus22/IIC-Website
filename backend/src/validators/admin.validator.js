@@ -29,6 +29,7 @@ export const validateEventImage = [
 
 export const validateTeamMember = [
   body('name').notEmpty().withMessage('Name is required'),
+  body('email').optional({ checkFalsy: true }).isEmail().withMessage('Valid email is required'),
   body('role').isIn(teamRoles).withMessage('Invalid team role'),
   body('category').isIn(teamCategories).withMessage('Invalid team category'),
   body('imageUrl').notEmpty().withMessage('Image URL is required')

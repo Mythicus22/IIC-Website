@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Search } from 'lucide-react';
 import ScrollReveal from '../components/ScrollReveal';
 import TeamCard from '../components/TeamCard';
 import { teamCategories, teamRoles } from '../constants/taxonomy';
+import { API_URL } from '../config/api';
 import './Team.css';
 
 const Team = () => {
@@ -15,8 +16,7 @@ const Team = () => {
   useEffect(() => {
     const fetchTeam = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-        const res = await axios.get(`${apiUrl}/team`);
+        const res = await axios.get(`${API_URL}/team`);
         setTeam(res.data);
       } catch (error) {
         console.error("Error fetching team:", error);
@@ -93,8 +93,7 @@ const Team = () => {
             <p>We are always looking for mentors, industry partners, and student leads to help expand our ecosystem. Share your expertise and shape the future.</p>
           </div>
           <div className="cta-box-actions">
-            <button className="btn" style={{backgroundColor: 'white', color: 'var(--dark)'}}>Become a Mentor</button>
-            <button className="btn btn-secondary">Apply as Student Lead</button>
+            <a href="https://forms.gle/Hs58wCfgvJFPRYL76" target="_blank" rel="noopener noreferrer" className="btn" style={{backgroundColor: 'white', color: 'var(--dark)'}}>Become a Mentor</a>
           </div>
         </div>
       </ScrollReveal>

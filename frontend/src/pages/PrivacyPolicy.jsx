@@ -1,4 +1,3 @@
-import React from 'react';
 import ScrollReveal from '../components/ScrollReveal';
 
 const PrivacyPolicy = () => {

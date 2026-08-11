@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import ScrollReveal from '../components/ScrollReveal';
 import './Auth.css';
 
@@ -13,8 +13,7 @@ const Auth = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: '',
-    adminCode: ''
+    password: ''
   });
 
   const handleSubmit = async (e) => {
@@ -26,7 +25,7 @@ const Auth = () => {
         toast.success(`Welcome back, ${data.name}! ${data.role === 'admin' ? '(Admin)' : ''}`, { id: toastId });
         navigate(data.role === 'admin' ? '/dashboard' : '/');
       } else {
-        const data = await register(formData.name, formData.email, formData.password, formData.adminCode);
+        const data = await register(formData.name, formData.email, formData.password);
         toast.success(`Account created! ${data.role === 'admin' ? 'Admin access granted 🔑' : 'Welcome to IIC!'}`, { id: toastId });
         navigate(data.role === 'admin' ? '/dashboard' : '/');
       }
@@ -82,19 +81,6 @@ const Auth = () => {
               />
             </div>
 
-            {!isLogin && (
-              <div className="input-group">
-                <label>Admin Invite Code (Optional)</label>
-                <input 
-                  type="password" 
-                  className="input-field" 
-                  placeholder="Leave blank for regular user"
-                  value={formData.adminCode} 
-                  onChange={e => setFormData({...formData, adminCode: e.target.value})} 
-                />
-              </div>
-            )}
-
             <button type="submit" className="btn btn-primary" style={{width: '100%', marginTop: '1rem'}}>
               {isLogin ? 'Log In' : 'Sign Up'}
             </button>
@@ -105,7 +91,7 @@ const Auth = () => {
               {isLogin ? "Don't have an account? " : "Already have an account? "}
               <button 
                 className="btn-link" 
-                onClick={() => { setIsLogin(!isLogin); setFormData({name: '', email: '', password: '', adminCode: ''}); }}
+                onClick={() => { setIsLogin(!isLogin); setFormData({name: '', email: '', password: ''}); }}
               >
                 {isLogin ? 'Sign Up' : 'Log In'}
               </button>

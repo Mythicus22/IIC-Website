@@ -1,17 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import ScrollReveal from '../components/ScrollReveal';
-import { useSocket } from '../context/SocketContext';
+import { useSocket } from '../context/useSocket';
 import { galleryCategories } from '../constants/taxonomy';
+import { API_URL } from '../config/api';
 import './Gallery.css';
 
 const GalleryImage = ({ item }) => {
-  const [imageFailed, setImageFailed] = useState(false);
+  const [failedImage, setFailedImage] = useState(null);
   const imageUrl = item.imageUrl || item.secure_url || item.url;
-
-  useEffect(() => {
-    setImageFailed(false);
-  }, [imageUrl]);
+  const imageFailed = failedImage === imageUrl;
 
   if (!imageUrl || imageFailed) {
     return <div className="gallery-img gallery-img-placeholder" />;
@@ -22,7 +20,7 @@ const GalleryImage = ({ item }) => {
       src={imageUrl}
       alt={item.title || item.category}
       className="gallery-img"
-      onError={() => setImageFailed(true)}
+      onError={() => setFailedImage(imageUrl)}
     />
   );
 };
@@ -35,8 +33,7 @@ const Gallery = () => {
   useEffect(() => {
     const fetchGallery = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-        const res = await axios.get(`${apiUrl}/gallery`);
+        const res = await axios.get(`${API_URL}/gallery`);
         setItems(res.data);
       } catch (error) {
         console.error("Error fetching gallery:", error);
@@ -49,8 +46,7 @@ const Gallery = () => {
     if (!socket) return;
     
     socket.on('gallery_updated', async () => {
-       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-       const res = await axios.get(`${apiUrl}/gallery`);
+       const res = await axios.get(`${API_URL}/gallery`);
        setItems(res.data);
     });
     

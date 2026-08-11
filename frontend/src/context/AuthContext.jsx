@@ -1,35 +1,30 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
+import { API_URL } from '../config/api';
+import { AuthContext } from './auth';
 
-const AuthContext = createContext();
-
-export const useAuth = () => {
-  return useContext(AuthContext);
+const getStoredUser = () => {
+  try {
+    const userInfo = localStorage.getItem('userInfo');
+    return userInfo ? JSON.parse(userInfo) : null;
+  } catch {
+    localStorage.removeItem('userInfo');
+    return null;
+  }
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const userInfo = localStorage.getItem('userInfo');
-    if (userInfo) {
-      setUser(JSON.parse(userInfo));
-    }
-    setLoading(false);
-  }, []);
+  const [user, setUser] = useState(getStoredUser);
 
   const login = async (email, password) => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    const res = await axios.post(`${apiUrl}/auth/login`, { email, password });
+    const res = await axios.post(`${API_URL}/auth/login`, { email, password });
     setUser(res.data);
     localStorage.setItem('userInfo', JSON.stringify(res.data));
     return res.data;
   };
 
-  const register = async (name, email, password, adminCode) => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    const res = await axios.post(`${apiUrl}/auth/register`, { name, email, password, adminCode });
+  const register = async (name, email, password) => {
+    const res = await axios.post(`${API_URL}/auth/register`, { name, email, password });
     setUser(res.data);
     localStorage.setItem('userInfo', JSON.stringify(res.data));
     return res.data;
@@ -41,8 +36,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
-      {!loading && children}
+    <AuthContext.Provider value={{ user, login, register, logout }}>
+      {children}
     </AuthContext.Provider>
   );
 };

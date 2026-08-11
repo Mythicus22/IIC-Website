@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
+  "engines": {
+    "node": ">=20 <26",
+    "npm": ">=10"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js"

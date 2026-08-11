@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import axios from 'axios';
 import 'leaflet/dist/leaflet.css';
@@ -11,26 +11,46 @@ L.Marker.prototype.options.icon = L.icon({ iconUrl: icon, shadowUrl: iconShadow,
 const FALLBACK = [28.6139, 77.2090];
 
 const MapComponent = ({ address, coordinates }) => {
-  const [position, setPosition] = useState(null);
+  const lat = coordinates?.lat;
+  const lng = coordinates?.lng;
+  const providedPosition = useMemo(() => {
+    if (lat && lng) {
+      return [lat, lng];
+    }
+
+    return null;
+  }, [lat, lng]);
+  const [geocodedLocation, setGeocodedLocation] = useState(null);
 
   useEffect(() => {
-    // Use stored coordinates if available
-    if (coordinates?.lat && coordinates?.lng) {
-      setPosition([coordinates.lat, coordinates.lng]);
-      return;
-    }
-    if (!address) { setPosition(FALLBACK); return; }
+    if (providedPosition || !address) return;
 
+    let active = true;
     axios.get('https://nominatim.openstreetmap.org/search', {
       params: { q: address, format: 'json', limit: 1 }
     }).then(res => {
+      if (!active) return;
+
       if (res.data?.length > 0) {
-        setPosition([parseFloat(res.data[0].lat), parseFloat(res.data[0].lon)]);
+        setGeocodedLocation({
+          address,
+          position: [parseFloat(res.data[0].lat), parseFloat(res.data[0].lon)]
+        });
       } else {
-        setPosition(FALLBACK);
+        setGeocodedLocation({ address, position: FALLBACK });
       }
-    }).catch(() => setPosition(FALLBACK));
-  }, [address, coordinates]);
+    }).catch(() => {
+      if (active) setGeocodedLocation({ address, position: FALLBACK });
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [address, providedPosition]);
+
+  const position = providedPosition ||
+    (geocodedLocation?.address === address ? geocodedLocation.position : null) ||
+    (!address ? FALLBACK : null);
 
   if (!position) return (
     <div style={{ height: '200px', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 'var(--radius-md)' }}>

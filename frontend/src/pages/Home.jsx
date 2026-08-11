@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import ScrollReveal from '../components/ScrollReveal';
 import EventCard from '../components/EventCard';
 import TeamCard from '../components/TeamCard';
-import { useSocket } from '../context/SocketContext';
+import { useSocket } from '../context/useSocket';
+import { API_URL } from '../config/api';
 import './Home.css';
 
 const Home = () => {
@@ -15,10 +16,9 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
         const [eventsRes, teamRes] = await Promise.all([
-          axios.get(`${apiUrl}/events`),
-          axios.get(`${apiUrl}/team`)
+          axios.get(`${API_URL}/events`),
+          axios.get(`${API_URL}/team`)
         ]);
         // Get only upcoming 3 events
         setEvents(eventsRes.data.filter(e => e.status === 'upcoming').slice(0, 3));
@@ -46,10 +46,9 @@ const Home = () => {
 
   const handleClaim = async (id) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      await axios.post(`${apiUrl}/events/${id}/claim`);
+      await axios.post(`${API_URL}/events/${id}/claim`);
       // Real-time update handles the state change
-    } catch (error) {
+    } catch {
       alert("Error claiming ticket");
     }
   };
@@ -185,12 +184,18 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="cta-section">
+      <section className="cta-section-wrapper section">
         <div className="container">
           <ScrollReveal>
-            <h2 className="cta-title">Ready to launch your startup?</h2>
-            <p className="cta-desc">Applications for the Summer Cohort are now open. Join the community that turns visionaries into founders.</p>
-            <button className="btn btn-light" style={{ backgroundColor: 'white', color: 'var(--secondary)' }}>Submit applications</button>
+            <div className="cta-box">
+              <div className="cta-box-content">
+                <h2 className="cta-title">Ready to launch your startup?</h2>
+                <p className="cta-desc">Applications for the Summer Cohort are now open. Join the community that turns visionaries into founders.</p>
+              </div>
+              <div className="cta-box-actions">
+                <a href="https://forms.gle/SeoQnn8KnrYLyoUD7" target="_blank" rel="noopener noreferrer" className="btn btn-light" style={{ backgroundColor: 'white', color: 'var(--secondary)' }}>Submit Applications</a>
+              </div>
+            </div>
           </ScrollReveal>
         </div>
       </section>
