@@ -1,9 +1,18 @@
 /* About Page Specific Styles */
 .about-hero {
+  display: block;
+}
+
+.about-hero-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.2fr 1fr;
   gap: 4rem;
   align-items: center;
+}
+
+.about-hero-content,
+.about-hero-image {
+  min-width: 0;
 }
 
 .pyramid-placeholder {

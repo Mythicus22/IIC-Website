@@ -8,16 +8,18 @@ const About = () => {
       {/* Hero Section */}
       <section className="about-hero section container">
         <ScrollReveal>
-          <div className="about-hero-content">
-            <span className="badge">Who We Are</span>
-            <h1 className="hero-title">Fostering the next generation of <i>innovators</i> and entrepreneurs.</h1>
-            <p className="hero-desc">
-              The Innovation & Incubation Cell (IIC) at our college is a vibrant ecosystem dedicated to transforming student ideas into viable business ventures through mentorship, funding, and collaboration.
-            </p>
-          </div>
-          <div className="about-hero-image">
-            <div className="pyramid-placeholder">
-               <div className="placeholder-text">IIC Activities Pyramid</div>
+          <div className="about-hero-grid">
+            <div className="about-hero-content">
+              <span className="badge">Who We Are</span>
+              <h1 className="hero-title">Fostering the next generation of <i>innovators</i> and entrepreneurs.</h1>
+              <p className="hero-desc">
+                The Innovation & Incubation Cell (IIC) at our college is a vibrant ecosystem dedicated to transforming student ideas into viable business ventures through mentorship, funding, and collaboration.
+              </p>
+            </div>
+            <div className="about-hero-image">
+              <div className="pyramid-placeholder">
+                 <div className="placeholder-text">IIC Activities Pyramid</div>
+              </div>
             </div>
           </div>
         </ScrollReveal>

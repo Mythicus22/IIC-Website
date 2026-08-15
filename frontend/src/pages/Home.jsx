@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import ScrollReveal from '../components/ScrollReveal';
 import EventCard from '../components/EventCard';
 import TeamCard from '../components/TeamCard';
+import collegeImage from '../assets/college.jpeg';
 import { useSocket } from '../context/useSocket';
 import { useAuth } from '../context/useAuth';
 import { API_URL } from '../config/api';
@@ -88,7 +89,7 @@ const Home = () => {
           </ScrollReveal>
           <ScrollReveal delay={0.2}>
             <div className="hero-image-wrapper">
-               <img src="/src/assets/college.jpeg" alt="College campus" className="hero-image" />
+               <img src={collegeImage} alt="College campus" className="hero-image" />
             </div>
           </ScrollReveal>
         </div>
