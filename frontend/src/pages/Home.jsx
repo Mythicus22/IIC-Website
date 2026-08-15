@@ -88,7 +88,7 @@ const Home = () => {
           </ScrollReveal>
           <ScrollReveal delay={0.2}>
             <div className="hero-image-wrapper">
-               <div className="hero-image-placeholder"></div>
+               <img src="/src/assets/college.jpeg" alt="College campus" className="hero-image" />
             </div>
           </ScrollReveal>
         </div>

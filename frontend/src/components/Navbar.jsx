@@ -32,7 +32,7 @@ const Navbar = () => {
 
         <div className="nav-actions">
           {!user ? (
-            <Link to="/auth" className="btn btn-primary">Join Us</Link>
+            <Link to="/auth" className="btn btn-secondary">Join Us</Link>
           ) : (
             <>
               {user.role === 'admin' && (
