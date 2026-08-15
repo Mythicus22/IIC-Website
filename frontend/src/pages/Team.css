@@ -12,6 +12,12 @@
   display: flex;
   gap: 2rem;
   flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filter-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .team-filters .search-box {
@@ -55,6 +61,7 @@
   position: relative;
   padding-bottom: 0.5rem;
   font-size: 1rem;
+  white-space: nowrap;
 }
 
 .filter-tabs button.active {
@@ -119,13 +126,32 @@
     align-items: stretch;
   }
   .filter-tabs {
-    overflow-x: auto;
-    padding-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
   }
   .team-filters .search-box {
     width: 100%;
   }
   .team-grid-large {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .team-grid-large {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .team-filters {
+    margin-bottom: 2rem;
+  }
+
+  .filter-tabs {
+    gap: 1rem;
+    justify-content: flex-start;
+  }
+
+  .filter-tabs button {
+    font-size: 0.9rem;
   }
 }

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Camera, BriefcaseBusiness } from 'lucide-react';
 import './Footer.css';
 
 const Footer = () => {
@@ -31,7 +32,6 @@ const Footer = () => {
           <ul>
             <li><Link to="/about#application-flow">Application Flow</Link></li>
             <li><Link to="/about#mentor-network">Mentor Network</Link></li>
-            <li><Link to="/auth">Partner Portal</Link></li>
             <li><Link to="/faqs">FAQs</Link></li>
           </ul>
         </div>
@@ -42,10 +42,12 @@ const Footer = () => {
           <p>iic@college.edu</p>
           <p>+1 234 567 890</p>
           <div className="social-links">
-            <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook">FB</a>
-            <a href="https://twitter.com" target="_blank" rel="noreferrer" aria-label="Twitter">TW</a>
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram">IG</a>
-            <a href="https://linkedin.com" target="_blank" rel="noreferrer" aria-label="LinkedIn">IN</a>
+            <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram">
+              <Camera size={18} />
+            </a>
+            <a href="https://linkedin.com" target="_blank" rel="noreferrer" aria-label="LinkedIn">
+              <BriefcaseBusiness size={18} />
+            </a>
           </div>
         </div>
       </div>

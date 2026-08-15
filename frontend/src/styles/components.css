@@ -62,7 +62,8 @@
   text-align: center;
   color: var(--text-muted);
   max-width: 600px;
-  margin: -2rem auto 3rem auto;
+  margin: 0 auto 3rem auto;
+  line-height: 1.6;
 }
 
 /* Cards */
