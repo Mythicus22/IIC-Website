@@ -1,5 +1,5 @@
 import { body, validationResult } from 'express-validator';
-import { eventCategories, galleryCategories, teamCategories, teamRoles } from '../constants/taxonomy.js';
+import { eventCategories, galleryCategories, teamCategories } from '../constants/taxonomy.js';
 
 export const validateRequest = (req, res, next) => {
   const errors = validationResult(req);
@@ -30,7 +30,6 @@ export const validateEventImage = [
 export const validateTeamMember = [
   body('name').notEmpty().withMessage('Name is required'),
   body('email').optional({ checkFalsy: true }).isEmail().withMessage('Valid email is required'),
-  body('role').isIn(teamRoles).withMessage('Invalid team role'),
   body('category').isIn(teamCategories).withMessage('Invalid team category'),
   body('imageUrl').notEmpty().withMessage('Image URL is required')
 ];

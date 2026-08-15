@@ -14,6 +14,7 @@ const eventSchema = new mongoose.Schema({
   category: { type: String, enum: eventCategories, required: true },
   status: { type: String, enum: ['upcoming', 'past'], default: 'upcoming' },
   imageUrl: { type: String, required: true },
+  order: { type: Number, default: 0 },
   speakers: [{
     name: String,
     role: String,

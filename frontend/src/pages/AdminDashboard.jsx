@@ -3,7 +3,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import ScrollReveal from '../components/ScrollReveal';
 import { useAuth } from '../context/useAuth';
-import { eventCategories, galleryCategories, teamCategories, teamRoles } from '../constants/taxonomy';
+import { eventCategories, galleryCategories, teamCategories } from '../constants/taxonomy';
 import { API_URL } from '../config/api';
 import './AdminDashboard.css';
 
@@ -81,9 +81,12 @@ const AdminDashboard = () => {
     title: '', description: '', date: '', time: '', location: '', coordinates: null, totalSeats: '', category: 'Workshop'
   });
   const [eventImage, setEventImage] = useState(null);
+  const [editingEventId, setEditingEventId] = useState(null);
+  const [events, setEvents] = useState([]);
 
-  const [teamData, setTeamData] = useState({ name: '', role: 'Student Member', category: 'Members', email: '' });
+  const [teamData, setTeamData] = useState({ name: '', category: 'Members', email: '' });
   const [teamImage, setTeamImage] = useState(null);
+  const [editingTeamId, setEditingTeamId] = useState(null);
   const [teamMembers, setTeamMembers] = useState([]);
   const [adminEmails, setAdminEmails] = useState([]);
   const [confirmAdmin, setConfirmAdmin] = useState(null);
@@ -92,13 +95,258 @@ const AdminDashboard = () => {
 
   const [galleryData, setGalleryData] = useState({ title: '', category: 'Events' });
   const [galleryImage, setGalleryImage] = useState(null);
+  const [editingGalleryId, setEditingGalleryId] = useState(null);
+  const [galleryItems, setGalleryItems] = useState([]);
+
+  const authConfig = () => ({ headers: { Authorization: `Bearer ${user.token}` } });
+
+  const fetchEvents = async () => {
+    try {
+      const { data } = await axios.get(`${API_URL}/events`);
+      setEvents(data);
+    } catch {
+      toast.error('Failed to load events');
+    }
+  };
+
+  const fetchTeamMembers = async () => {
+    try {
+      const { data } = await axios.get(`${API_URL}/team`);
+      setTeamMembers(data);
+    } catch {
+      toast.error('Failed to load team members');
+    }
+  };
+
+  const fetchGalleryItems = async () => {
+    try {
+      const { data } = await axios.get(`${API_URL}/gallery`);
+      setGalleryItems(data);
+    } catch {
+      toast.error('Failed to load gallery');
+    }
+  };
 
   useEffect(() => {
-    if (activeTab === 'team') {
-      axios.get(`${API_URL}/team`).then(res => setTeamMembers(res.data)).catch(() => {});
+    if (user?.token) {
       axios.get(`${API_URL}/auth/admins`, authConfig()).then(res => setAdminEmails(res.data)).catch(() => {});
     }
+  }, [user]);
+
+  useEffect(() => {
+    if (activeTab === 'events') fetchEvents();
+    if (activeTab === 'team') {
+      fetchTeamMembers();
+      axios.get(`${API_URL}/auth/admins`, authConfig()).then(res => setAdminEmails(res.data)).catch(() => {});
+    }
+    if (activeTab === 'gallery') fetchGalleryItems();
   }, [activeTab]);
+
+  const uploadImage = async (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    const { data } = await axios.post(`${API_URL}/upload`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${user.token}` }
+    });
+    const imageUrl = data.imageUrl || data.secure_url || data.url;
+    if (!imageUrl) throw new Error('Image uploaded, but no image URL was returned');
+    return imageUrl;
+  };
+
+  const resetEventForm = () => {
+    setEventData({ title: '', description: '', date: '', time: '', location: '', coordinates: null, totalSeats: '', category: 'Workshop' });
+    setEventImage(null); 
+    setEditingEventId(null);
+  };
+
+  const resetTeamForm = () => {
+    setTeamData({ name: '', category: 'Members', email: '' });
+    setTeamImage(null); 
+    setEditingTeamId(null);
+  };
+
+  const resetGalleryForm = () => {
+    setGalleryData({ title: '', category: 'Events' });
+    setGalleryImage(null);
+    setEditingGalleryId(null);
+  };
+
+  const handleEventSubmit = async (e) => {
+    e.preventDefault();
+    setUploading(true);
+    const toastId = toast.loading(editingEventId ? 'Updating event...' : 'Creating event...');
+    try {
+      const imageUrl = eventImage ? await uploadImage(eventImage) : (editingEventId ? events.find(event => event._id === editingEventId)?.imageUrl : null);
+      if (!imageUrl) throw new Error('Event image is required');
+
+      const payload = {
+        ...eventData,
+        imageUrl,
+        totalSeats: Number(eventData.totalSeats),
+        remainingSeats: editingEventId
+          ? Math.max(Number(eventData.totalSeats) - (events.find(event => event._id === editingEventId)?.registeredUsers?.length || 0), 0)
+          : Number(eventData.totalSeats)
+      };
+
+      if (editingEventId) {
+        await axios.put(`${API_URL}/events/${editingEventId}`, payload, authConfig());
+        toast.success('Event updated successfully!', { id: toastId });
+      } else {
+        await axios.post(`${API_URL}/events`, payload, authConfig());
+        toast.success('Event created successfully!', { id: toastId });
+      }
+
+      resetEventForm();
+      fetchEvents();
+    } catch (error) {
+      const msg = error.response?.data?.errors?.map(e => e.msg).join(', ') || error.response?.data?.message || 'Error saving event';
+      toast.error(msg, { id: toastId });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleTeamSubmit = async (e) => {
+    e.preventDefault();
+    setUploading(true);
+    const toastId = toast.loading(editingTeamId ? 'Updating team member...' : 'Adding team member...');
+    try {
+      const imageUrl = teamImage ? await uploadImage(teamImage) : (editingTeamId ? teamMembers.find(member => member._id === editingTeamId)?.imageUrl : null);
+      if (!imageUrl) throw new Error('Profile image is required');
+
+      const payload = { ...teamData, imageUrl };
+      if (editingTeamId) {
+        await axios.put(`${API_URL}/team/${editingTeamId}`, payload, authConfig());
+        toast.success('Team member updated!', { id: toastId });
+      } else {
+        await axios.post(`${API_URL}/team`, payload, authConfig());
+        toast.success('Team member added!', { id: toastId });
+      }
+
+      resetTeamForm();
+      fetchTeamMembers();
+      axios.get(`${API_URL}/auth/admins`, authConfig()).then(res => setAdminEmails(res.data)).catch(() => {});
+    } catch (error) {
+      const msg = error.response?.data?.errors?.map(e => e.msg).join(', ') || error.response?.data?.message || 'Error saving team member';
+      toast.error(msg, { id: toastId });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleGallerySubmit = async (e) => {
+    e.preventDefault();
+    setUploading(true);
+    const toastId = toast.loading(editingGalleryId ? 'Updating gallery item...' : 'Uploading image...');
+    try {
+      const imageUrl = galleryImage ? await uploadImage(galleryImage) : (editingGalleryId ? galleryItems.find(item => item._id === editingGalleryId)?.imageUrl : null);
+      if (!imageUrl) throw new Error('Image is required for gallery');
+
+      const payload = { ...galleryData, imageUrl };
+      if (editingGalleryId) {
+        await axios.put(`${API_URL}/gallery/${editingGalleryId}`, payload, authConfig());
+        toast.success('Gallery item updated!', { id: toastId });
+      } else {
+        await axios.post(`${API_URL}/gallery`, payload, authConfig());
+        toast.success('Gallery image added!', { id: toastId });
+      }
+
+      resetGalleryForm();
+      fetchGalleryItems();
+    } catch (error) {
+      const msg = error.response?.data?.errors?.map(e => e.msg).join(', ') || error.response?.data?.message || 'Error saving gallery item';
+      toast.error(msg, { id: toastId });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const startEditEvent = (event) => {
+    setEditingEventId(event._id);
+    setEventData({
+      title: event.title,
+      description: event.description,
+      date: event.date ? new Date(event.date).toISOString().slice(0, 10) : '',
+      time: event.time,
+      location: event.location,
+      coordinates: event.coordinates || null,
+      totalSeats: String(event.totalSeats ?? ''),
+      category: event.category
+    });
+    setEventImage(null);
+    setActiveTab('events');
+  };
+
+  const startEditTeam = (member) => {
+    setEditingTeamId(member._id);
+    setTeamData({
+      name: member.name,
+      category: member.category,
+      email: member.email || ''
+    });
+    setTeamImage(null);
+    setActiveTab('team');
+  };
+
+  const startEditGallery = (item) => {
+    setEditingGalleryId(item._id);
+    setGalleryData({ title: item.title || '', category: item.category });
+    setGalleryImage(null);
+    setActiveTab('gallery');
+  };
+
+  const handleDeleteEvent = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/events/${id}`, authConfig());
+      toast.success('Event deleted');
+      fetchEvents();
+    } catch {
+      toast.error('Failed to delete event');
+    }
+  };
+
+  const handleDeleteTeam = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/team/${id}`, authConfig());
+      toast.success('Team member deleted');
+      fetchTeamMembers();
+    } catch {
+      toast.error('Failed to delete team member');
+    }
+  };
+
+  const handleDeleteGallery = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/gallery/${id}`, authConfig());
+      toast.success('Gallery item deleted');
+      fetchGalleryItems();
+    } catch {
+      toast.error('Failed to delete gallery item');
+    }
+  };
+
+  const moveItem = async (resource, id, direction) => {
+    const list = resource === 'events' ? [...events] : resource === 'team' ? [...teamMembers] : [...galleryItems];
+    const index = list.findIndex(item => item._id === id);
+    if (index < 0) return;
+
+    const swapIndex = direction === 'up' ? index - 1 : index + 1;
+    if (swapIndex < 0 || swapIndex >= list.length) return;
+
+    const reordered = [...list];
+    [reordered[index], reordered[swapIndex]] = [reordered[swapIndex], reordered[index]];
+    const orderedIds = reordered.map(item => item._id);
+
+    try {
+      await axios.put(`${API_URL}/${resource === 'events' ? 'events' : resource === 'team' ? 'team' : 'gallery'}/reorder`, { orderedIds }, authConfig());
+      if (resource === 'events') fetchEvents();
+      if (resource === 'team') fetchTeamMembers();
+      if (resource === 'gallery') fetchGalleryItems();
+      toast.success('Order updated');
+    } catch {
+      toast.error('Failed to reorder items');
+    }
+  };
 
   const handleMakeAdmin = async (member, password) => {
     try {
@@ -125,88 +373,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const authConfig = () => ({ headers: { Authorization: `Bearer ${user.token}` } });
-
-  const uploadImage = async (file) => {
-    const formData = new FormData();
-    formData.append('image', file);
-    const { data } = await axios.post(`${API_URL}/upload`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${user.token}` }
-    });
-    const imageUrl = data.imageUrl || data.secure_url || data.url;
-
-    if (!imageUrl) {
-      throw new Error('Image uploaded, but no image URL was returned');
-    }
-
-    return imageUrl;
-  };
-
-  const handleEventSubmit = async (e) => {
-    e.preventDefault();
-    if (!eventImage) return toast.error('Event image is required');
-    setUploading(true);
-    const toastId = toast.loading('Creating event...');
-    try {
-      const imageUrl = await uploadImage(eventImage);
-      const payload = {
-        ...eventData,
-        imageUrl,
-        remainingSeats: Number(eventData.totalSeats),
-        totalSeats: Number(eventData.totalSeats)
-      };
-      await axios.post(`${API_URL}/events`, payload, authConfig());
-      toast.success('Event created successfully!', { id: toastId });
-      setEventData({ title: '', description: '', date: '', time: '', location: '', coordinates: null, totalSeats: '', category: 'Workshop' });
-      setEventImage(null);
-    } catch (error) {
-      const msg = error.response?.data?.errors?.map(e => e.msg).join(', ') || error.response?.data?.message || 'Error creating event';
-      toast.error(msg, { id: toastId });
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleTeamSubmit = async (e) => {
-    e.preventDefault();
-    if (!teamImage) return toast.error('Profile image is required');
-    setUploading(true);
-    const toastId = toast.loading('Adding team member...');
-    try {
-      const imageUrl = await uploadImage(teamImage);
-      await axios.post(`${API_URL}/team`, { ...teamData, imageUrl }, authConfig());
-      toast.success('Team member added!', { id: toastId });
-      setTeamData({ name: '', role: 'Student Member', category: 'Members', email: '' });
-      setTeamImage(null);
-      axios.get(`${API_URL}/team`).then(res => setTeamMembers(res.data)).catch(() => {});
-      axios.get(`${API_URL}/auth/admins`, authConfig()).then(res => setAdminEmails(res.data)).catch(() => {});
-    } catch (error) {
-      const msg = error.response?.data?.errors?.map(e => e.msg).join(', ') || error.response?.data?.message || 'Error adding team member';
-      toast.error(msg, { id: toastId });
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleGallerySubmit = async (e) => {
-    e.preventDefault();
-    if (!galleryImage) return toast.error('Image is required for gallery');
-    setUploading(true);
-    const toastId = toast.loading('Uploading image...');
-    try {
-      const imageUrl = await uploadImage(galleryImage);
-      await axios.post(`${API_URL}/gallery`, { ...galleryData, imageUrl }, authConfig());
-      toast.success('Gallery image added!', { id: toastId });
-      setGalleryData({ title: '', category: 'Events' });
-      setGalleryImage(null);
-    } catch (error) {
-      const msg = error.response?.data?.errors?.map(e => e.msg).join(', ') || error.response?.data?.message || 'Error adding gallery image';
-      toast.error(msg, { id: toastId });
-    } finally {
-      setUploading(false);
-    }
-  };
-
   return (
     <div className="admin-page section container">
       <ScrollReveal>
@@ -229,7 +395,7 @@ const AdminDashboard = () => {
                 <form onSubmit={handleEventSubmit}>
                   <div className="input-group">
                     <label>Event Image</label>
-                    <input type="file" className="input-field" accept="image/*" required onChange={e => setEventImage(e.target.files[0])} />
+                    <input type="file" className="input-field" accept="image/*" required={!editingEventId} onChange={e => setEventImage(e.target.files[0])} />
                   </div>
                   <div className="input-group">
                     <label>Title</label>
@@ -275,10 +441,35 @@ const AdminDashboard = () => {
                       ))}
                     </select>
                   </div>
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={uploading}>
-                    {uploading ? 'Uploading & Creating...' : 'Create Event'}
-                  </button>
+                  <div className="admin-form-actions">
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={uploading}>
+                      {uploading ? (editingEventId ? 'Updating...' : 'Uploading & Creating...') : (editingEventId ? 'Update Event' : 'Create Event')}
+                    </button>
+                    {editingEventId && (
+                      <button type="button" className="btn btn-outline" onClick={resetEventForm}>Cancel Edit</button>
+                    )}
+                  </div>
                 </form>
+
+                {events.length > 0 && (
+                  <div className="admin-list-panel">
+                    <h3>Current Events</h3>
+                    {events.map((event, index) => (
+                      <div key={event._id} className="admin-list-item">
+                        <div>
+                          <strong>{event.title}</strong>
+                          <span>{event.category} · {event.registeredUsers?.length || 0} registered</span>
+                        </div>
+                        <div className="admin-item-actions">
+                          <button onClick={() => moveItem('events', event._id, 'up')} disabled={index === 0}>↑</button>
+                          <button onClick={() => moveItem('events', event._id, 'down')} disabled={index === events.length - 1}>↓</button>
+                          <button className="btn btn-secondary" onClick={() => startEditEvent(event)}>Edit</button>
+                          <button className="btn btn-outline" onClick={() => handleDeleteEvent(event._id)}>Delete</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -288,7 +479,7 @@ const AdminDashboard = () => {
                 <form onSubmit={handleTeamSubmit}>
                   <div className="input-group">
                     <label>Profile Image</label>
-                    <input type="file" className="input-field" accept="image/*" required onChange={e => setTeamImage(e.target.files[0])} />
+                    <input type="file" className="input-field" accept="image/*" required={!editingTeamId} onChange={e => setTeamImage(e.target.files[0])} />
                   </div>
                   <div className="input-group">
                     <label>Name</label>
@@ -299,14 +490,6 @@ const AdminDashboard = () => {
                     <input type="email" className="input-field" placeholder="Optional" value={teamData.email} onChange={e => setTeamData({ ...teamData, email: e.target.value })} />
                   </div>
                   <div className="input-group">
-                    <label>Role</label>
-                    <select className="input-field" value={teamData.role} onChange={e => setTeamData({ ...teamData, role: e.target.value })}>
-                      {teamRoles.map(role => (
-                        <option key={role} value={role}>{role}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="input-group">
                     <label>Category</label>
                     <select className="input-field" value={teamData.category} onChange={e => setTeamData({ ...teamData, category: e.target.value })}>
                       {teamCategories.map(category => (
@@ -314,34 +497,37 @@ const AdminDashboard = () => {
                       ))}
                     </select>
                   </div>
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={uploading}>
-                    {uploading ? 'Uploading & Adding...' : 'Add Member'}
-                  </button>
+                  <div className="admin-form-actions">
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={uploading}>
+                      {uploading ? (editingTeamId ? 'Updating...' : 'Uploading & Adding...') : (editingTeamId ? 'Update Member' : 'Add Member')}
+                    </button>
+                    {editingTeamId && (
+                      <button type="button" className="btn btn-outline" onClick={resetTeamForm}>Cancel Edit</button>
+                    )}
+                  </div>
                 </form>
 
                 {teamMembers.length > 0 && (
-                  <div style={{ marginTop: '2rem' }}>
-                    <h3 style={{ marginBottom: '1rem' }}>Current Team Members</h3>
+                  <div className="admin-list-panel">
+                    <h3>Current Team Members</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      {teamMembers.filter(member => member.email !== user.email).map(member => (
-                        <div key={member._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: 'var(--bg-light, #f8f9fa)', borderRadius: '8px' }}>
+                      {teamMembers.filter(member => member.email !== user.email).map((member, index) => (
+                        <div key={member._id} className="admin-list-item">
                           <div>
                             <strong>{member.name}</strong>
-                            <span style={{ marginLeft: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{member.role}</span>
+                            <span>{member.category}</span>
                           </div>
-                          {member.email && (
-                            adminEmails.includes(member.email)
-                              ? <button
-                                  className="btn"
-                                  style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem', backgroundColor: '#ef4444', color: 'white' }}
-                                  onClick={() => setConfirmRemoveAdmin(member)}
-                                >Remove Admin</button>
-                              : <button
-                                  className="btn btn-secondary"
-                                  style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }}
-                                  onClick={() => setConfirmAdmin(member)}
-                                >Make Admin</button>
-                          )}
+                          <div className="admin-item-actions">
+                            <button onClick={() => moveItem('team', member._id, 'up')} disabled={index === 0}>↑</button>
+                            <button onClick={() => moveItem('team', member._id, 'down')} disabled={index === teamMembers.length - 1}>↓</button>
+                            <button className="btn btn-secondary" onClick={() => startEditTeam(member)}>Edit</button>
+                            <button className="btn btn-outline" onClick={() => handleDeleteTeam(member._id)}>Delete</button>
+                            {member.email && (
+                              adminEmails.includes(member.email)
+                                ? <button className="btn" style={{ backgroundColor: '#ef4444', color: 'white' }} onClick={() => setConfirmRemoveAdmin(member)}>Remove Admin</button>
+                                : <button className="btn btn-secondary" onClick={() => setConfirmAdmin(member)}>Make Admin</button>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -356,7 +542,7 @@ const AdminDashboard = () => {
                 <form onSubmit={handleGallerySubmit}>
                   <div className="input-group">
                     <label>Image File</label>
-                    <input type="file" className="input-field" accept="image/*" required onChange={e => setGalleryImage(e.target.files[0])} />
+                    <input type="file" className="input-field" accept="image/*" required={!editingGalleryId} onChange={e => setGalleryImage(e.target.files[0])} />
                   </div>
                   <div className="input-group">
                     <label>Title (Optional)</label>
@@ -370,10 +556,35 @@ const AdminDashboard = () => {
                       ))}
                     </select>
                   </div>
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={uploading}>
-                    {uploading ? 'Uploading & Adding...' : 'Add Image'}
-                  </button>
+                  <div className="admin-form-actions">
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={uploading}>
+                      {uploading ? (editingGalleryId ? 'Updating...' : 'Uploading & Adding...') : (editingGalleryId ? 'Update Image' : 'Add Image')}
+                    </button>
+                    {editingGalleryId && (
+                      <button type="button" className="btn btn-outline" onClick={resetGalleryForm}>Cancel Edit</button>
+                    )}
+                  </div>
                 </form>
+
+                {galleryItems.length > 0 && (
+                  <div className="admin-list-panel">
+                    <h3>Current Gallery Items</h3>
+                    {galleryItems.map((item, index) => (
+                      <div key={item._id} className="admin-list-item">
+                        <div>
+                          <strong>{item.title || 'Untitled'}</strong>
+                          <span>{item.category}</span>
+                        </div>
+                        <div className="admin-item-actions">
+                          <button onClick={() => moveItem('gallery', item._id, 'up')} disabled={index === 0}>↑</button>
+                          <button onClick={() => moveItem('gallery', item._id, 'down')} disabled={index === galleryItems.length - 1}>↓</button>
+                          <button className="btn btn-secondary" onClick={() => startEditGallery(item)}>Edit</button>
+                          <button className="btn btn-outline" onClick={() => handleDeleteGallery(item._id)}>Delete</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

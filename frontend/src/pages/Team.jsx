@@ -3,14 +3,13 @@ import axios from 'axios';
 import { Search } from 'lucide-react';
 import ScrollReveal from '../components/ScrollReveal';
 import TeamCard from '../components/TeamCard';
-import { teamCategories, teamRoles } from '../constants/taxonomy';
+import { teamCategories } from '../constants/taxonomy';
 import { API_URL } from '../config/api';
 import './Team.css';
 
 const Team = () => {
   const [team, setTeam] = useState([]);
   const [filter, setFilter] = useState('All');
-  const [roleFilter, setRoleFilter] = useState('All Roles');
   const [search, setSearch] = useState('');
 
   useEffect(() => {
@@ -26,10 +25,9 @@ const Team = () => {
   }, []);
 
   const filteredTeam = team.filter(member => {
-    const matchesSearch = member.name.toLowerCase().includes(search.toLowerCase()) || member.role.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = member.name.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = filter === 'All' || member.category === filter;
-    const matchesRole = roleFilter === 'All Roles' || member.role === roleFilter;
-    return matchesSearch && matchesCategory && matchesRole;
+    return matchesSearch && matchesCategory;
   });
 
   return (
@@ -56,13 +54,6 @@ const Team = () => {
             ))}
           </div>
 
-          <select className="role-select" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
-            <option value="All Roles">All Roles</option>
-            {teamRoles.map(role => (
-              <option key={role} value={role}>{role}</option>
-            ))}
-          </select>
-          
           <div className="search-box">
             <Search size={20} className="search-icon" />
             <input 

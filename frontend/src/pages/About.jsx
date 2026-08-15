@@ -23,7 +23,7 @@ const About = () => {
         </ScrollReveal>
       </section>
 
-      {/* VMG Section (Vision, Mission, Goals) */}
+      {/* VMG Section */}
       <section className="vmg-section container section">
         <ScrollReveal>
           <div className="vmg-grid">
@@ -88,7 +88,6 @@ const About = () => {
         <ScrollReveal>
           <h2 className="section-title">Why Join the IIC Ecosystem?</h2>
           <p className="section-subtitle">Unlock your potential with resources designed to accelerate your growth from student to founder.</p>
-          
           <div className="features-grid">
             {[
               { icon: '👥', title: 'Expert Mentorship', desc: 'Direct access to seasoned entrepreneurs and domain experts to guide your strategic decisions.' },
@@ -108,6 +107,69 @@ const About = () => {
             ))}
           </div>
         </ScrollReveal>
+      </section>
+
+      {/* Application Flow Section */}
+      <section id="application-flow" className="appflow-section bg-light section">
+        <div className="container">
+          <ScrollReveal>
+            <div className="page-header text-center" style={{ marginBottom: '3rem' }}>
+              <span className="badge">Incubation Process</span>
+              <h2 className="section-title">Application Flow</h2>
+              <p className="section-subtitle">Follow these simple steps to transform your idea into a funded startup.</p>
+            </div>
+            <div className="flow-steps-grid">
+              {[
+                { n: 1, title: 'Idea Submission', desc: 'Submit your executive summary and pitch deck via our online portal.' },
+                { n: 2, title: 'Screening Round', desc: 'Our panel of experts reviews the viability and innovation factor of your idea.' },
+                { n: 3, title: 'Pitch Day', desc: 'Shortlisted candidates present live to the IIC leadership and investor network.' },
+                { n: 4, title: 'Pre-Incubation', desc: 'Selected teams receive 3 months of rigorous mentorship, lab access, and seed funding!', highlight: true },
+              ].map(step => (
+                <div key={step.n} className={`flow-step-card${step.highlight ? ' highlight' : ''}`}>
+                  <div className="flow-step-number">{step.n}</div>
+                  <h3>{step.title}</h3>
+                  <p>{step.desc}</p>
+                </div>
+              ))}
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
+              <a href="https://forms.gle/SeoQnn8KnrYLyoUD7" target="_blank" rel="noopener noreferrer" className="btn btn-primary">Apply Now</a>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* Mentor Network Section */}
+      <section id="mentor-network" className="mentor-section section">
+        <div className="container">
+          <ScrollReveal>
+            <div className="page-header text-center" style={{ marginBottom: '3rem' }}>
+              <span className="badge">Ecosystem</span>
+              <h2 className="section-title">Mentor Network</h2>
+              <p className="section-subtitle">How our mentorship program accelerates your growth.</p>
+            </div>
+            <div className="mentor-grid">
+              <div className="mentor-card">
+                <div className="mentor-icon">🔬</div>
+                <h3>Domain Experts</h3>
+                <p>Technical guidance specific to your industry — AI, Biotech, FinTech, and more.</p>
+              </div>
+              <div className="mentor-card">
+                <div className="mentor-icon">🎓</div>
+                <h3>Student Founders</h3>
+                <p>You and your team absorbing knowledge, iterating rapidly, and building boldly.</p>
+              </div>
+              <div className="mentor-card">
+                <div className="mentor-icon">📊</div>
+                <h3>Business Strategists</h3>
+                <p>GTM strategies, financial modeling, and pitch refinement from seasoned professionals.</p>
+              </div>
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
+              <a href="https://forms.gle/Hs58wCfgvJFPRYL76" target="_blank" rel="noopener noreferrer" className="btn btn-secondary">Become a Mentor</a>
+            </div>
+          </ScrollReveal>
+        </div>
       </section>
 
       {/* CTA */}

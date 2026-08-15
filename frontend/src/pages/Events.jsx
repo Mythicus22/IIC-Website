@@ -27,14 +27,22 @@ const Events = () => {
 
   useEffect(() => {
     if (!socket) return;
-    socket.on('ticket_claimed', ({ eventId, remainingSeats }) => {
-      setEvents(prev => prev.map(e => e._id === eventId ? { ...e, remainingSeats } : e));
-    });
-    socket.on('event_created', (newEvent) => {
+
+    const handleTicketClaim = ({ eventId, remainingSeats, registeredUsers }) => {
+      setEvents(prev => prev.map(e => e._id === eventId ? { ...e, remainingSeats, registeredUsers } : e));
+    };
+
+    const handleEventCreated = (newEvent) => {
       setEvents(prev => [...prev, newEvent].sort((a, b) => new Date(a.date) - new Date(b.date)));
       toast.success(`New event added: ${newEvent.title}`);
-    });
-    return () => { socket.off('ticket_claimed'); socket.off('event_created'); };
+    };
+
+    socket.on('ticket_claimed', handleTicketClaim);
+    socket.on('event_created', handleEventCreated);
+    return () => {
+      socket.off('ticket_claimed', handleTicketClaim);
+      socket.off('event_created', handleEventCreated);
+    };
   }, [socket]);
 
   const handleClaim = async (id) => {
@@ -49,6 +57,9 @@ const Events = () => {
         {},
         { headers: { Authorization: `Bearer ${user.token}` } }
       );
+
+      setEvents(prev => prev.map(event => event._id === id ? { ...event, ...data.event, registeredUsers: data.event.registeredUsers || event.registeredUsers } : event));
+
       if (data.alreadyClaimed) {
         toast('You are already registered for this event!', { id: toastId, icon: 'ℹ️' });
       } else {
@@ -61,7 +72,6 @@ const Events = () => {
     }
   };
 
-  // Reset visible count when filters change
   const filteredEvents = events.filter(e => {
     const matchesSearch = e.title.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = filter === 'All Categories' || e.category === filter;

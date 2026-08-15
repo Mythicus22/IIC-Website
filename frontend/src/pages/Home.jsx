@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 import ScrollReveal from '../components/ScrollReveal';
 import EventCard from '../components/EventCard';
 import TeamCard from '../components/TeamCard';
 import { useSocket } from '../context/useSocket';
+import { useAuth } from '../context/useAuth';
 import { API_URL } from '../config/api';
 import './Home.css';
 
@@ -12,6 +14,7 @@ const Home = () => {
   const [events, setEvents] = useState([]);
   const [team, setTeam] = useState([]);
   const socket = useSocket();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,12 +23,10 @@ const Home = () => {
           axios.get(`${API_URL}/events`),
           axios.get(`${API_URL}/team`)
         ]);
-        // Get only upcoming 3 events
         setEvents(eventsRes.data.filter(e => e.status === 'upcoming').slice(0, 3));
-        // Get top 4 leadership team
         setTeam(teamRes.data.slice(0, 4));
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error('Error fetching data:', error);
       }
     };
     fetchData();
@@ -33,29 +34,43 @@ const Home = () => {
 
   useEffect(() => {
     if (!socket) return;
-    
-    // Listen for real-time ticket claims
-    socket.on('ticket_claimed', ({ eventId, remainingSeats }) => {
-      setEvents(prev => prev.map(e => e._id === eventId ? { ...e, remainingSeats } : e));
-    });
-    
-    return () => {
-      socket.off('ticket_claimed');
+
+    const handleTicketClaim = ({ eventId, remainingSeats, registeredUsers }) => {
+      setEvents(prev => prev.map(e => e._id === eventId ? { ...e, remainingSeats, registeredUsers } : e));
     };
+
+    socket.on('ticket_claimed', handleTicketClaim);
+    return () => socket.off('ticket_claimed', handleTicketClaim);
   }, [socket]);
 
   const handleClaim = async (id) => {
+    if (!user) {
+      toast.error('Please log in to register for events');
+      return null;
+    }
+
     try {
-      await axios.post(`${API_URL}/events/${id}/claim`);
-      // Real-time update handles the state change
-    } catch {
-      alert("Error claiming ticket");
+      const { data } = await axios.post(
+        `${API_URL}/events/${id}/claim`,
+        {},
+        { headers: { Authorization: `Bearer ${user.token}` } }
+      );
+
+      setEvents(prev => prev.map(event => event._id === id ? { ...event, ...data.event, registeredUsers: data.event.registeredUsers || event.registeredUsers } : event));
+      if (data.alreadyClaimed) {
+        toast('You are already registered for this event!', { icon: 'ℹ️' });
+      } else {
+        toast.success('Registered! Your ticket is ready 🎟️');
+      }
+      return data;
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to register');
+      return null;
     }
   };
 
   return (
     <div className="home-page">
-      {/* Hero Section */}
       <section className="hero-section">
         <div className="container hero-content">
           <ScrollReveal>
@@ -79,7 +94,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
       <section className="stats-section container">
         <ScrollReveal>
           <div className="stats-grid">
@@ -107,7 +121,6 @@ const Home = () => {
         </ScrollReveal>
       </section>
 
-      {/* Mission Section */}
       <section className="mission-section section bg-light">
         <div className="container">
           <ScrollReveal>
@@ -132,7 +145,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Events Section */}
       <section className="events-section section">
         <div className="container">
           <ScrollReveal>
@@ -145,11 +157,11 @@ const Home = () => {
               </div>
               <Link to="/events" className="btn btn-secondary">View All Events</Link>
             </div>
-            
+
             <div className="events-grid">
               {events.length > 0 ? events.map(event => (
                 <ScrollReveal key={event._id} delay={0.1}>
-                  <EventCard event={event} onClaim={handleClaim} />
+                  <EventCard event={event} onClaim={handleClaim} user={user} />
                 </ScrollReveal>
               )) : (
                 <p>No upcoming events at the moment.</p>
@@ -159,13 +171,12 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Team Section */}
       <section className="team-section section bg-light">
         <div className="container">
           <ScrollReveal>
             <h2 className="section-title">Meet the Leadership</h2>
             <p className="section-subtitle">The dedicated team driving innovation at our campus.</p>
-            
+
             <div className="team-grid">
               {team.length > 0 ? team.map((member, index) => (
                 <ScrollReveal key={member._id} delay={index * 0.1}>
@@ -175,7 +186,7 @@ const Home = () => {
                 <p>Leadership team will be updated soon.</p>
               )}
             </div>
-            
+
             <div className="team-action">
               <Link to="/team" className="btn btn-primary">Meet the Full Team</Link>
             </div>
@@ -183,7 +194,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="cta-section-wrapper section">
         <div className="container">
           <ScrollReveal>

@@ -14,17 +14,6 @@
   flex-shrink: 0;
 }
 
-.role-select {
-  min-width: 160px;
-  padding: 0.6rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background-color: var(--light);
-  color: var(--text-main);
-  font-family: var(--font-body);
-  flex-shrink: 0;
-}
-
 .team-filters .search-box {
   flex: 1;
   min-width: 200px;
@@ -133,7 +122,6 @@
     overflow-x: auto;
     padding-bottom: 1.5rem;
   }
-  .role-select,
   .team-filters .search-box {
     width: 100%;
   }

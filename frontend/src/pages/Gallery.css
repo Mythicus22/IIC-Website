@@ -7,25 +7,27 @@
 }
 
 .gallery-filter-btn {
-  padding: 0.5rem 1.5rem;
+  padding: 0.6rem 1.2rem;
   border: 1px solid var(--border);
   background-color: var(--light);
   border-radius: var(--radius-full);
   color: var(--text-main);
   font-family: var(--font-body);
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
 }
 
 .gallery-filter-btn:hover {
   border-color: var(--secondary);
+  color: var(--secondary);
 }
 
 .gallery-filter-btn.active {
-  background-color: var(--secondary);
+  background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
   color: var(--light);
   border-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
 }
 
 .gallery-grid {
@@ -87,6 +89,34 @@
 .gallery-title {
   color: var(--light);
   font-size: 1.1rem;
+}
+
+.gallery-footer {
+  margin-top: 4rem;
+  padding: 3rem 1.5rem;
+  background-color: var(--primary);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.gallery-footer .showing-text {
+  font-weight: 700;
+  color: var(--dark);
+  margin-bottom: 1rem;
+}
+
+.gallery-footer .progress-bar {
+  width: 220px;
+  height: 4px;
+  background-color: rgba(15, 23, 42, 0.18);
+  margin: 0 auto;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.gallery-footer .progress-fill {
+  height: 100%;
+  background-color: var(--dark);
 }
 
 @media (max-width: 992px) {

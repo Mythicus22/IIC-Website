@@ -97,9 +97,9 @@ const Gallery = () => {
         </div>
         
         {filteredItems.length > 0 && (
-          <div className="gallery-footer text-center" style={{marginTop: '4rem', paddingBottom: '2rem'}}>
-             <hr style={{maxWidth: '100px', margin: '0 auto 1rem auto', borderColor: 'var(--border)'}} />
-             <p style={{color: 'var(--text-muted)'}}>Showing {filteredItems.length} of {items.length} items</p>
+          <div className="gallery-footer">
+            <p className="showing-text">Showing {filteredItems.length} of {items.length} items</p>
+            <div className="progress-bar"><div className="progress-fill" style={{ width: `${(filteredItems.length / Math.max(items.length, 1)) * 100}%` }} /></div>
           </div>
         )}
       </ScrollReveal>

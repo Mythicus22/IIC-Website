@@ -10,7 +10,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 80px;
+  min-height: 80px;
+  gap: 1rem;
+  padding: 0.75rem 0;
 }
 
 .logo {
@@ -34,6 +36,8 @@
 .nav-links {
   display: flex;
   gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .nav-links a {
@@ -59,9 +63,31 @@
 .nav-actions {
   display: flex;
   gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
-/* Specific button styles for navbar to match wireframe */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .nav-links,
+  .nav-actions {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .nav-links {
+    gap: 0.75rem 1.25rem;
+  }
+
+  .nav-actions {
+    gap: 0.75rem;
+  }
+}
+
 .nav-actions .btn-outline {
   border-color: var(--light);
   background-color: var(--light);

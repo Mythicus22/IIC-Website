@@ -17,7 +17,7 @@ const TeamCard = ({ member }) => {
       </div>
       <div className="team-info">
         <h4 className="team-name">{member.name}</h4>
-        <p className="team-role">{member.role}</p>
+        <p className="team-role">{member.category}</p>
       </div>
     </div>
   );

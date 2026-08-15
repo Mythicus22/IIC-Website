@@ -4,15 +4,21 @@ import QRCode from 'qrcode';
 import MapComponent from './MapComponent';
 import './EventCard.css';
 
-const createTicketId = (eventId) => (
-  `IIC-${eventId.slice(-6).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`
-);
+const createTicketId = (eventId, userId) => {
+  if (!eventId || !userId) return null;
+  const seed = `${eventId}:${userId}`;
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  }
+  return `IIC-${String(eventId).slice(-6).toUpperCase()}-${hash.toString(36).slice(-8).toUpperCase()}`;
+};
 
 const TicketModal = ({ event, ticketId, user, onClose }) => {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    if (canvasRef.current) {
+    if (canvasRef.current && ticketId) {
       QRCode.toCanvas(canvasRef.current, ticketId, {
         width: 120,
         margin: 1,
@@ -23,13 +29,12 @@ const TicketModal = ({ event, ticketId, user, onClose }) => {
 
   const handleDownload = () => {
     const ticket = document.getElementById('ticket-content');
-    // Simple print-based download
     const printWindow = window.open('', '_blank');
+    if (!ticket || !printWindow) return;
     printWindow.document.write(`
       <html><head><title>IIC Event Ticket</title>
       <style>
         body { margin: 0; font-family: 'Inter', sans-serif; background: #f8fafc; display: flex; justify-content: center; padding: 2rem; }
-        ${document.querySelector('style') ? '' : ''}
       </style></head>
       <body>${ticket.outerHTML}</body></html>
     `);
@@ -115,11 +120,23 @@ const EventCard = ({ event, onClaim, user }) => {
   const imageUrl = event.imageUrl || event.secure_url || event.url;
   const imageFailed = failedImage === imageUrl;
 
+  const isRegistered = Boolean(
+    user && event.registeredUsers?.some((id) => String(id) === String(user._id))
+  );
+
+  const ticketId = isRegistered ? (event.ticketId || createTicketId(event._id, user._id)) : null;
+
   const handleClaimClick = async () => {
     const result = await onClaim(event._id);
     if (result?.event) {
-      setTicket({ event: result.event, ticketId: createTicketId(result.event._id) });
+      const nextTicketId = result.ticketId || createTicketId(result.event._id, user?._id);
+      setTicket({ event: result.event, ticketId: nextTicketId });
     }
+  };
+
+  const handleViewTicket = () => {
+    if (!ticketId) return;
+    setTicket({ event, ticketId });
   };
 
   return (
@@ -152,15 +169,15 @@ const EventCard = ({ event, onClaim, user }) => {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
             <span style={{ fontSize: '0.85rem', color: event.remainingSeats > 0 ? 'var(--text-muted)' : '#EF4444' }}>
-              {event.remainingSeats > 0 ? `${event.remainingSeats} seats left` : 'Sold Out'}
+              {event.remainingSeats > 0 ? `${event.registeredUsers?.length ?? 0} registered · ${event.remainingSeats} seats left` : 'Sold Out'}
             </span>
           </div>
           <button
-            className={`btn ${event.remainingSeats > 0 ? 'btn-primary' : 'btn-outline'}`}
-            onClick={handleClaimClick}
-            disabled={event.remainingSeats === 0}
+            className={`btn ${isRegistered ? 'btn-secondary' : event.remainingSeats > 0 ? 'btn-primary' : 'btn-outline'}`}
+            onClick={isRegistered ? handleViewTicket : handleClaimClick}
+            disabled={!isRegistered && event.remainingSeats === 0}
           >
-            {event.remainingSeats > 0 ? 'Register & Get Ticket' : 'Sold Out'}
+            {isRegistered ? 'View Ticket' : event.remainingSeats > 0 ? 'Register & Get Ticket' : 'Sold Out'}
           </button>
         </div>
       </div>

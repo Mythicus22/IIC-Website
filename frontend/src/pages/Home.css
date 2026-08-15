@@ -161,6 +161,44 @@
   margin-bottom: 3rem;
 }
 
+.team-grid .team-card {
+  background: var(--light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem 1.5rem 1rem;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  min-height: 100%;
+}
+
+.team-grid .team-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--secondary-light);
+}
+
+.team-grid .team-img-wrapper {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin: 0 auto 1.25rem auto;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  border: 4px solid var(--light);
+}
+
+.team-grid .team-name {
+  color: var(--dark);
+  font-size: 1.1rem;
+  margin-bottom: 0.4rem;
+}
+
+.team-grid .team-role {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
 .team-action {
   text-align: center;
 }

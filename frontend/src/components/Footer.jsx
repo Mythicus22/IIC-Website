@@ -29,8 +29,8 @@ const Footer = () => {
         <div className="footer-links">
           <h4>RESOURCES</h4>
           <ul>
-            <li><Link to="/application-flow">Application Flow</Link></li>
-            <li><Link to="/mentor-network">Mentor Network</Link></li>
+            <li><Link to="/about#application-flow">Application Flow</Link></li>
+            <li><Link to="/about#mentor-network">Mentor Network</Link></li>
             <li><Link to="/auth">Partner Portal</Link></li>
             <li><Link to="/faqs">FAQs</Link></li>
           </ul>

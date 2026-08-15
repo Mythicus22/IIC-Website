@@ -31,8 +31,6 @@ const Navbar = () => {
         </nav>
 
         <div className="nav-actions">
-          <Link to="/events" className="btn btn-outline">Explore</Link>
-          
           {!user ? (
             <Link to="/auth" className="btn btn-primary">Join Us</Link>
           ) : (
@@ -40,7 +38,7 @@ const Navbar = () => {
               {user.role === 'admin' && (
                 <Link to="/dashboard" className="btn btn-secondary">Admin Dashboard</Link>
               )}
-              <button onClick={handleLogout} className="btn btn-outline" style={{borderColor: 'var(--border)', color: 'var(--text-main)', backgroundColor: 'transparent'}}>
+              <button onClick={handleLogout} className="btn btn-outline" style={{borderColor: '#1e293b', color: '#1e293b', backgroundColor: 'transparent'}}>
                 Logout
               </button>
             </>

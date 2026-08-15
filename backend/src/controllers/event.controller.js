@@ -1,13 +1,17 @@
+import crypto from 'crypto';
 import Event from '../models/Event.js';
 import { getIO } from '../socket/index.js';
 
+export const generateTicketId = (eventId, userId) => {
+  const hash = crypto.createHash('sha256').update(`${eventId}:${userId}`).digest('hex').slice(0, 12).toUpperCase();
+  return `IIC-${String(eventId).slice(-6).toUpperCase()}-${hash}`;
+};
+
 export const getEvents = async (req, res) => {
   try {
-    const events = await Event.find().sort({ date: 1 });
-    console.log(`[Events] Fetched ${events.length} events`);
+    const events = await Event.find().sort({ order: 1, date: 1 });
     res.json(events);
   } catch (error) {
-    console.error('[Events] Fetch error:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -15,26 +19,21 @@ export const getEvents = async (req, res) => {
 export const getEventById = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
-    if (!event) {
-      console.warn(`[Events] Event not found: ${req.params.id}`);
-      return res.status(404).json({ message: 'Event not found' });
-    }
+    if (!event) return res.status(404).json({ message: 'Event not found' });
     res.json(event);
   } catch (error) {
-    console.error('[Events] GetById error:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
 export const createEvent = async (req, res) => {
   try {
-    const event = new Event(req.body);
+    const count = await Event.countDocuments();
+    const event = new Event({ ...req.body, order: count });
     const savedEvent = await event.save();
-    console.log(`[Events] ✅ Created event: "${savedEvent.title}" (ID: ${savedEvent._id})`);
     getIO().emit('event_created', savedEvent);
     res.status(201).json(savedEvent);
   } catch (error) {
-    console.error('[Events] ❌ Create error:', error.message);
     res.status(400).json({ message: error.message });
   }
 };
@@ -42,23 +41,31 @@ export const createEvent = async (req, res) => {
 export const updateEvent = async (req, res) => {
   try {
     const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    console.log(`[Events] ✅ Updated event: "${updatedEvent.title}" (ID: ${updatedEvent._id})`);
+    if (!updatedEvent) return res.status(404).json({ message: 'Event not found' });
     getIO().emit('event_updated', updatedEvent);
     res.json(updatedEvent);
   } catch (error) {
-    console.error('[Events] ❌ Update error:', error.message);
     res.status(400).json({ message: error.message });
+  }
+};
+
+export const reorderEvents = async (req, res) => {
+  try {
+    const { orderedIds } = req.body;
+    await Promise.all(orderedIds.map((id, index) => Event.findByIdAndUpdate(id, { order: index })));
+    getIO().emit('events_reordered');
+    res.json({ message: 'Reordered' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
 export const deleteEvent = async (req, res) => {
   try {
     await Event.findByIdAndDelete(req.params.id);
-    console.log(`[Events] 🗑️ Deleted event ID: ${req.params.id}`);
     getIO().emit('event_deleted', req.params.id);
     res.json({ message: 'Event deleted' });
   } catch (error) {
-    console.error('[Events] ❌ Delete error:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -69,15 +76,13 @@ export const claimTicket = async (req, res) => {
     if (!event) return res.status(404).json({ message: 'Event not found' });
 
     const userId = req.user?._id;
+    const ticketId = userId ? generateTicketId(event._id.toString(), userId.toString()) : null;
 
-    // Check if user already registered
     if (userId && event.registeredUsers.some(id => id.toString() === userId.toString())) {
-      console.log(`[Tickets] User ${userId} already registered for "${event.title}"`);
-      return res.json({ message: 'Already registered', event, alreadyClaimed: true });
+      return res.json({ message: 'Already registered', event, alreadyClaimed: true, ticketId });
     }
 
     if (event.remainingSeats <= 0) {
-      console.warn(`[Tickets] ⚠️ No seats left for "${event.title}"`);
       return res.status(400).json({ message: 'No seats remaining' });
     }
 
@@ -85,12 +90,9 @@ export const claimTicket = async (req, res) => {
     if (userId) event.registeredUsers.push(userId);
     await event.save();
 
-    console.log(`[Tickets] 🎟️ Ticket claimed for "${event.title}" by user ${userId || 'guest'} — ${event.remainingSeats} seats left`);
-    getIO().emit('ticket_claimed', { eventId: event._id, remainingSeats: event.remainingSeats });
-
-    res.json({ message: 'Ticket claimed successfully', event, remainingSeats: event.remainingSeats });
+    getIO().emit('ticket_claimed', { eventId: event._id, remainingSeats: event.remainingSeats, registeredUsers: event.registeredUsers });
+    res.json({ message: 'Ticket claimed successfully', event, remainingSeats: event.remainingSeats, ticketId });
   } catch (error) {
-    console.error('[Tickets] ❌ Claim error:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
